@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="PrimeDepth: Efficient Monocular Depth Estimation with a Stable Diffusion Preimage">
+  <meta name="keywords" content="depth, estimation, monocular, scene, reconstruction">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:description" content="PrimeDepth: Efficient Monocular Depth Estimation with a Stable Diffusion Preimage">
+  <meta name="twitter:creator" content="sipirius">
+
+  <title>PrimeDepth: Efficient Monocular Depth Estimation with a Stable Diffusion Preimage</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FWSVCGZTG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-1FWSVCGZTG');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/bulma.min.css">
+  <link rel="stylesheet" href="./css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./css/twentytwenty.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <link rel="icon" href="./images/radio.png">
+
+  <script src="./js/jquery-3.2.1.min.js"></script>
+  <script src="./js/jquery.event.move.js"></script>
+  <script src="./js/jquery.twentytwenty.js"></script>
+  <script src="./js/bulma-carousel.min.js"></script>
+  <script src="./js/bulma-slider.min.js"></script>
+  <script src="./js/fontawesome.all.min.js"></script>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">PrimeDepth: Efficient Monocular Depth Estimation with a Stable Diffusion Preimage</h1>
+          <h3 class="title has-text-centered">ACCV 2024</h3>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Denis Zavadski<sup>*</sup>,</span>
+            <span class="author-block">Damjan Kalšan<sup>*</sup>,</span>
+            <span class="author-block">Carsten Rother</span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Computer Vision and Learning Lab, IWR, Heidelberg University</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://www.arxiv.org/abs/2409.09144" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf" style="color: orangered"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/vislearn/PrimeDepth" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Colab Link. -->
+              <!-- <span class="link-block">
+                <a href="https://colab.research.google.com/drive/xxx-u?usp=sharing" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="images/colab.svg">
+                  </span>
+                  <span>&nbsp;Google Colab</span>
+                </a>
+              </span> -->
+              <!-- Hugging Face. -->
+              <!-- <span class="link-block">
+                <a href="https://huggingface.co/spaces/xxx" target="_blank" rel="noopener noreferrer"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      &#129303;
+                  </span>
+                  <span>Hugging Face Space</span>
+                </a>
+              </span> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img id="teaser" width="100%" src="./images/teaser.png" alt="Teaser image demonstrating DpethFM depth estimation."/>
+    </div>
+  </div>
+</section>
+
+
+<section class="section pt-0">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Overview</h2>
+        <div class="content has-text-justified">
+          <p>
+            We present <span class="methodname">PrimeDepth</span>, a method for the utilisation of pre-trained generative models for downstream tasks like monocular depth estimation.
+            <!-- By exploiting the architectural bias of the final image representation of Stable Diffusion, we pre-train <span class="methodname">PrimeDepth</span> on unlabelled data and a small set of synthetic labelled data, all while leaving Stable Diffusion untouched. --> 
+            We exploit the final image representation of Stable Diffusion and propose a simple method with a natural architectural bias towards processing it.
+            <span class="methodname">PrimeDepth</span> is pre-trained on unlabelled data and a small set of synthetic labelled data, all while leaving Stable Diffusion untouched.
+            Doing so, we are able to estimate monocular depths in just a single step yielding competitive and detailed depth predictions. 
+            
+            The complementary nature of <span class="methodname">PrimeDepth</span> to the data-driven approach Depth Anything shows in the pixel-wise average of estimated monocular depths of both methods, setting a new state-of-the-art in zero-shot monocular depth estimation.
+          </p>
+
+          <p>
+            The gallery below presents images sourced from the internet and the corresponding depth estimates of our <span class="methodname">PrimeDepth</span> in comparison to current state-of-the-art approaches Depth Anything and Marigold.
+            Utilise the slider and gestures to reveal details on both sides. All results are generated with the default parameters of the corresponding model. The diffusion-based approach Marigold requires 50 steps and ensembles over 10 predictions.
+            In contrast, <span class="methodname">PrimeDepth</span> uses only one step and no ensembling, allowing for over 100x faster prediction speed.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel-horizontal" class="carousel results-carousel">
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bird_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bar_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/bloom_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/clock_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/dom_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flowerbush.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/Flowerbush_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flowerbush_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/Flowerbush_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flowerbush_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/Flowerbush_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/garden_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/guy_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/flamingo_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/monastry_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/japan_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic_DepthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/picnic_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/road_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/rome_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/street_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/playground_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/tea_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/horizontal_resized/terasse_primeDepth.png">
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel-vertical" class="carousel results-carousel">
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/goodBoy_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/king_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/anchor_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fruit_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/salmon_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/fish_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/palmtree_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/koala_primeDepth.png">
+            </div>
+          </div>
+        </div>
+
+        <div class="twoitem">
+          <div class="twentytwenty-container twentytwenty-container-top">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-mid">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town_depthAnything.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town_primeDepth.png">
+            </div>
+          </div>
+          <div class="twentytwenty-container twentytwenty-container-bottom">
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town_marigold.png">
+            </div>
+            <div class="cmpcontent">
+              <img src="./images/comparisons/vertical_resized/town_primeDepth.png">
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+  $(window).on('load', function() {
+    bulmaCarousel.attach('#results-carousel-horizontal', {
+      slidesToScroll: 1,
+      slidesToShow: 3,
+      loop: true,
+      autoplay: true,
+    });
+
+    bulmaCarousel.attach('#results-carousel-vertical', {
+      slidesToScroll: 1,
+      slidesToShow: 5,
+      loop: true,
+      autoplay: true,
+    });
+
+    $(".twentytwenty-container-top").twentytwenty({
+      before_label: 'Input',
+      after_label: 'Ours',
+      default_offset_pct: 0.75,
+    });
+    $(".twentytwenty-container-mid").twentytwenty({
+      before_label: 'DepthAnything',
+      after_label: 'Ours',
+      default_offset_pct: 0.35,
+    });
+    $(".twentytwenty-container-bottom").twentytwenty({
+      before_label: 'Marigold',
+      after_label: 'Ours',
+      default_offset_pct: 0.35,
+    });
+  });
+</script>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Method</h2>
+        <div class="content has-text-justified">
+
+          
+          <h3 class="title has-text-centered">
+            Utilising the Generative Preimage
+          </h3>
+          <img id="method_train" width="100%" src="./images/Preimage_Extraction_bigger.png" alt="PrimeDepth Preimage Extraction"/>
+          <p>
+            Instead of the RGB input image, we use the image representation extracted from the last step of Stable Diffusion, i.e. Stable Diffusion Preimage, as it contains a richer feature composition than the RGB image itself.
+            The preimage entails all the intermediate, multi-scale feature maps, cross- and self-attention maps of every neural block.
+            After each block, the extracted feature maps, cross- and self-attention maps are fused and kept at their respective resolution, as illustrated in the figure above.
+          </p>
+          
+          <h3 class="title has-text-centered">
+            Architectural Bias for Preimage Integration
+          </h3>
+          <img id="method_train" width="100%" src="./images/PrimeDepth_pipeline.png" alt="PrimeDepth Network Design"/>
+          <p>
+            To exploit the full potential of the preimage, we mirror the architecture of the Stable Diffusion Decoder but with smaller size for the Preimage Refiner.
+            Similar to U-Net skip connections, the refiner receives the fused preimage parts at its respective blocks via concatenation.
+            The mirrored architecture and the successive  incorporation of the preimage at the respective blocks yields a natural architectural bias for the processing of the preimage.
+          </p>
+
+          <h3 class="title has-text-centered">
+            Training Protocol
+          </h3>
+          <p>
+            <!-- To not disturb the image representation and to not risk catastrophic forgetting, we leave the weights of Stable Diffusion frozen. -->
+            To avoid the risk of catastrophic forgetting and altering the image representation, we leave the weights of Stable Diffusion frozen.
+            The refiner, the depth branch and the segmentation branch are trained simultaneously. <br>
+            Since the refiner has to be initialised randomly, we pre-train it on a set of pseudo label pairs gathered by running Depth Anything on unlabelled images.
+            After pre-training, we train on labelled synthetic data composed of Hypersim and Virtual KITTI.
+          </p>
+
+          <h3 class="title has-text-centered">
+            Comparison with other Methods
+          </h3>
+          <p>
+            Quantitative comparison of <span class="methodname">PrimeDepth</span> with depth estimators on several zero-shot benchmarks. 
+            Bold numbers are the best, underscored second best. Our method is either the best or second best and outperforms other methods on overall rank with only little training on purely synthetic datasets.
+          </p>
+
+          <img id="comparison" width="100%" src="./images/comparison_table_all.png" alt="Comparison with other methods"/>
+
+          <h3 class="title has-text-centered">
+            Comparison to State-of-the-Art
+          </h3>
+          <p>
+            Quantitative comparison of <span class="methodname">PrimeDepth</span> with state-of-the-art depth estimators on several zero-shot benchmarks including difficult scenarios using a standardised evaluation protocol.
+            Bold numbers are the best, underscored second best.<br>
+            Unlike Marigold, our method remains stable under difficult conditions (rabbitai, nuScenes-C), arguably because of the unchanged Stable Diffusion representation.
+            Overall, Depth Anything, which uses 1.5M labelled training images vs 74K for Marigold and <span class="methodname">PrimeDepth</span>, performs best with <span class="methodname">PrimeDepth</span> being the clear runner-up.
+
+            Despite the pre-training on Depth Anything pseudo labels, the predictions of <span class="methodname">PrimeDepth</span> and Depth Anything are complementary.
+            To demonstrate this, we show results of a simple pixel-wise average combining the predictions of Depth Anything and <span class="methodname">PrimeDepth</span>.
+              It improves over both Depth Anything and <span class="methodname">PrimeDepth</span>, meaning that the two signals are not fully correlated and sets a new state-of-the-art in monocular depth estimation. 
+          </p>
+          <img id="comparison" width="100%" src="./images/comparison_table.png" alt="Comparison with state-of-the-art"/>
+
+          <p class="mt-5">
+            For additional qualitative and quantitative results, as well as ablation studies, please refer to the PDF paper linked at the top of this page.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Method. -->
+  </div>
+</section>
+
+
+<section class="section pt-0" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Citation</h2>
+    <pre class="selectable"><code>@misc{zavadski2024primedepth,
+      title={PrimeDepth: Efficient Monocular Depth Estimation with a Stable Diffusion Preimage}, 
+      author={Denis Zavadski and Damjan Kalšan and Carsten Rother},
+      year={2024},
+      eprint={2409.09144},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+}
+</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer pt-4 pb-0">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template based on
+            <a href="https://github.com/nerfies/nerfies.github.io">
+              Nerfies
+            </a> and 
+            <a href="https://marigoldmonodepth.github.io/">Marigold</a>.
+            and licensed under
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+              CC-BY-SA-4.0
+            </a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

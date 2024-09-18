@@ -1,0 +1,121 @@
+model:
+  target: ldm.models.diffusion.ddpm.PrimeDepth
+  params:
+    linear_start: 0.00085
+    linear_end: 0.012
+    num_timesteps_cond: 1
+    timesteps: 1000
+    first_stage_key: image
+    cond_stage_key: caption
+    parameterization: x0
+    image_size: 64
+    channels: 4
+    cond_stage_trainable: false
+    conditioning_key: crossattn
+    monitor: val/loss
+    scale_factor: 0.18215
+    use_ema: false
+    ckpt_path: /path/to/PrimeDepth.ckpt
+    label_mode:
+    - segmentation
+    - depth
+    label_stage_config:
+      target: ldm.modules.diffusionmodules.labeller.PrimeDepthLabeller
+      params:
+        image_size: 32
+        in_channels: 4
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions:
+        - 4
+        - 2
+        - 1
+        num_res_blocks: 2
+        channel_mult:
+        - 1
+        - 2
+        - 4
+        - 4
+        num_head_channels: 64
+        use_spatial_transformer: true
+        use_linear_in_transformer: true
+        transformer_depth: 1
+        context_dim: 1024
+        use_checkpoint: false
+        legacy: false
+        infusion2refiner: cat
+        refiner_model_ratio: 0.5
+        use_self_attn_maps: true
+        use_cross_attn_maps: true
+        use_feature_maps: true
+        n_ca_maps: 77
+        n_sa_maps: 64
+        channels2predictor: 512
+        label_mode:
+          depth: 3
+          segmentation: 150
+        zero_convs: false
+        scale_input_features_with_model: true
+        label_decoder_config:
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        use_checkpoint: true
+        image_size: 32
+        in_channels: 4
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions:
+        - 4
+        - 2
+        - 1
+        num_res_blocks: 2
+        channel_mult:
+        - 1
+        - 2
+        - 4
+        - 4
+        num_head_channels: 64
+        use_spatial_transformer: true
+        use_linear_in_transformer: true
+        transformer_depth: 1
+        context_dim: 1024
+        legacy: false
+    first_stage_config:
+      target: ldm.models.autoencoder.AutoencoderKL
+      params:
+        embed_dim: 4
+        monitor: val/rec_loss
+        ddconfig:
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenOpenCLIPEmbedder

@@ -1,4 +1,4 @@
-black==23.7.0
+black==24.3.0
 clip @ git+https://github.com/openai/CLIP.git
 einops>=0.6.1
 fairscale>=0.4.13
